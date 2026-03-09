@@ -1,5 +1,11 @@
 # Electric Field Simulation and Visualization of a Coaxial Cylinder with Dielectric Layer
 
+![CI](https://github.com/qvintinvs/DBD-Electrostatic-Field-Plotting/actions/workflows/ci.yml/badge.svg)
+![Python](https://img.shields.io/badge/python-3.12-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+
+---
+
 ## Table of Contents
 - [Overview](#overview)
 - [Visualization](#visualization)
