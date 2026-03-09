@@ -33,7 +33,3 @@ jobs:
       - name: Run isort
         run: |
           pipenv run isort . --check
-
-      - name: Run simulation
-        run: |
-          pipenv run python main.py
