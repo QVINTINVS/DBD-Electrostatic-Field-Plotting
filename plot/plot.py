@@ -172,7 +172,19 @@ class PlotBuilder:
         # Screen-up is +Y, so screen-right becomes +Z
         cam.up = (0, 1, 0)
 
-        cam.zoom(1.2)
+    def auto_zoom(self, margin=1.2):
+        """
+        Adjust camera zoom based on axis length.
+
+        Parameters
+        ----------
+        margin : float
+            Safety margin so the axes fit comfortably in view.
+        """
+
+        axis_length = np.max(np.abs(self.cloud.points)) + self.glyph_size
+
+        self.plotter.camera.parallel_scale = margin * axis_length
 
     def show(self):
         """

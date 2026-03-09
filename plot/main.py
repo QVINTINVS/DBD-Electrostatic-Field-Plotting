@@ -10,6 +10,8 @@ def main():
     plt.add_glyphs()
     plt.add_axes()
 
+    plt.auto_zoom()
+
     plt.show()
 
 
