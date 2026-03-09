@@ -189,7 +189,9 @@ class PlotBuilder:
 
         self.plotter.show()
 
-    def save_png(self, filename="electric_field.png", transparent=False, window_size=(1024, 1024)):
+    def save_png(
+        self, filename="electric_field.png", transparent=False, window_size=(1024, 1024)
+    ):
         """
         Render the visualization off-screen and save it as a PNG image.
 
