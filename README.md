@@ -2,6 +2,7 @@
 
 ## Table of Contents
 - [Overview](#overview)
+- [Visualization](#visualization)
 - [Physical Problem Description](#physical-problem-description)
 - [Project Structure](#project-structure)
 - [Installation](#installation)
@@ -24,6 +25,38 @@ The work combines:
 - 3D scientific visualization (PyVista)
 
 It is intended as an educational and research-oriented tool, demonstrating both physical modeling and clean, modular Python design.
+
+---
+
+## Visualization
+
+### Reactor length: 5 cm
+
+<p align="center">
+  <img src="figures/electric_field_5.png" width="480">
+</p>
+
+<p align="center">
+  <em>
+    Figure 1 — Electric field distribution for a coaxial reactor with total
+    length of 5 cm. Strong edge effects appear near the cylinder extremities,
+    producing noticeable axial field components.
+  </em>
+</p>
+
+### Reactor length: 18 cm
+
+<p align="center">
+  <img src="figures/electric_field_18.png" width="480">
+</p>
+
+<p align="center">
+  <em>
+    Figure 2 — Electric field distribution for a reactor length of 18 cm.
+    The longer geometry reduces edge effects, approaching the radial field
+    profile expected for an ideal infinite coaxial structure.
+  </em>
+</p>
 
 ---
 
