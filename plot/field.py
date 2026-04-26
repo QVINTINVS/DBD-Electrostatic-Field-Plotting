@@ -8,6 +8,7 @@ Description:
 import math
 from dataclasses import dataclass
 from enum import IntEnum, auto
+from functools import cached_property
 
 import cylinder
 import numpy as np
@@ -43,22 +44,54 @@ class DielectricField:
     """
 
     eps_0 = 8.854e-12  # Vacuum permittivity [F/m]
-    eps_g = eps_0  # Permittivity of the gas region
-    eps_d = 5 * eps_0  # Permittivity of the dielectric layer
+    eps_g: float = eps_0  # Permittivity of the gas region
+    eps_d: float = 5 * eps_0  # Permittivity of the dielectric layer
 
-    r_a = 13.5e-3  # Inner conductor radius [m]
-    r_d = 14.8e-3  # Dielectric outer radius [m]
-    r_b = 18e-3  # Outer conductor radius [m]
+    r_a: float = 13.5e-3  # Inner conductor radius [m]
+    r_d: float = 14.8e-3  # Dielectric outer radius [m]
+    r_b: float = 18e-3  # Outer conductor radius [m]
 
-    L = 20e-2  # Cylinder length [m]
+    L: float = 15e-2  # Cylinder length [m]
 
-    V_0 = 10e3  # Applied voltage [V]
+    V_0: float = 10e3  # Applied voltage [V]
 
-    geometric_factor = eps_g / (
-        eps_g * math.log(r_d / r_a) + eps_d * math.log(r_b / r_d)
-    )
+    def __post_init__(self):
+        if not (0 < self.r_a < self.r_d < self.r_b):
+            raise ValueError("Radii must satisfy r_a < r_d < r_b and be positive.")
 
-    coords = cylinder.CoaxialCylinder(r_a, r_b, L)
+        if self.L <= 0:
+            raise ValueError("Cylinder length must be positive.")
+
+        if self.eps_g <= 0 or self.eps_d <= 0:
+            raise ValueError("Permittivities must be positive.")
+
+    @cached_property
+    def coords(self):
+        return cylinder.CoaxialCylinder(self.r_a, self.r_b, self.L)
+
+    @cached_property
+    def laplace_scaling_factor(self):
+        """
+        Scaling factor from Laplace’s solution for a two-region coaxial system.
+
+        Relates the applied potential V₀ to the radial electric field E(r),
+        accounting for geometry and dielectric discontinuity.
+
+        Determines how efficiently voltage is converted into field in the
+        piecewise dielectric structure.
+
+        Assumes radial symmetry and quasi-static conditions.
+
+        Returns
+        -------
+        float
+            Dimensionless factor linking V₀ to E(r).
+        """
+
+        return self.eps_g / (
+            self.eps_g * math.log(self.r_d / self.r_a)
+            + self.eps_d * math.log(self.r_b / self.r_d)
+        )
 
     def calculate_field(self):
         """
@@ -94,8 +127,8 @@ class DielectricField:
 
         axial_factor = (term1 - term2) / 2
 
-        Er = self.V_0 * self.geometric_factor * axial_factor / r
-        Ez = self.V_0 * self.geometric_factor * (1 / rm - 1 / rp)
+        Er = self.V_0 * self.laplace_scaling_factor * axial_factor / r
+        Ez = self.V_0 * self.laplace_scaling_factor * (1 / rm - 1 / rp)
 
         # Permittivity-jump correction derived from boundary conditions.
         # NOTE: This applies in the gas region due to ε-discontinuity at r = r_d.
