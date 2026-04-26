@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 pyvista = "==0.46.4"
 numpy = "==2.4.0"
+pydantic = "==2.11.0"
 
 [dev-packages]
 ruff = "==0.14.13"
