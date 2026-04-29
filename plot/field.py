@@ -41,56 +41,68 @@ class DielectricField:
 
     The electric field is evaluated on a discretized cylindrical grid and
     returned in Cartesian coordinates.
+
+    Parameters
+    ----------
+    epsilon_r : float
+        Relative permittivity of the dielectric region (ε_d = ε_r * ε₀).
+
+    r_a : float
+        Inner conductor radius [m].
+
+    r_d : float
+        Outer radius of the dielectric layer [m].
+
+    r_b : float
+        Inner radius of the outer conductor [m].
+
+    l : float
+        Length of the coaxial cylinder [m].
+
+    v_0 : float
+        Peak voltage applied between the inner and outer conductors [V].
     """
 
-    eps_0 = 8.854e-12  # Vacuum permittivity [F/m]
-    eps_g: float = eps_0  # Permittivity of the gas region
-    eps_d: float = 5 * eps_0  # Permittivity of the dielectric layer
+    EPS_0 = 8.8541878128e-12  # Vacuum permittivity [F/m] (CODATA 2018)
+    epsilon_r: float
 
-    r_a: float = 13.5e-3  # Inner conductor radius [m]
-    r_d: float = 14.8e-3  # Dielectric outer radius [m]
-    r_b: float = 18e-3  # Outer conductor radius [m]
+    r_a: float
+    r_d: float
+    r_b: float
 
-    L: float = 15e-2  # Cylinder length [m]
+    l: float
 
-    V_0: float = 10e3  # Applied voltage [V]
+    v_0: float
 
     def __post_init__(self):
         if not (0 < self.r_a < self.r_d < self.r_b):
             raise ValueError("Radii must satisfy r_a < r_d < r_b and be positive.")
 
-        if self.L <= 0:
+        if self.l <= 0:
             raise ValueError("Cylinder length must be positive.")
 
-        if self.eps_g <= 0 or self.eps_d <= 0:
+        if self.epsilon_r <= 0:
             raise ValueError("Permittivities must be positive.")
 
     @cached_property
     def coords(self):
-        return cylinder.CoaxialCylinder(self.r_a, self.r_b, self.L)
+        return cylinder.CoaxialCylinder(self.r_a, self.r_b, self.l)
 
     @cached_property
-    def laplace_scaling_factor(self):
+    def coaxial_denominator(self):
         """
-        Scaling factor from Laplace’s solution for a two-region coaxial system.
+        Effective logarithmic denominator of the coaxial Laplace solution.
 
-        Relates the applied potential V₀ to the radial electric field E(r),
-        accounting for geometry and dielectric discontinuity.
+        Represents the combined geometric and dielectric contribution of the
+        two-region structure.
 
-        Determines how efficiently voltage is converted into field in the
-        piecewise dielectric structure.
+        Used to scale the electric field as:
 
-        Assumes radial symmetry and quasi-static conditions.
-
-        Returns
-        -------
-        float
-            Dimensionless factor linking V₀ to E(r).
+        E ∝ V₀ / denominator
         """
 
-        return self.eps_g / (
-            self.eps_g * math.log(self.r_d / self.r_a)
-            + self.eps_d * math.log(self.r_b / self.r_d)
+        return math.log(self.r_d / self.r_a) + self.epsilon_r * math.log(
+            self.r_b / self.r_d
         )
 
     def calculate_field(self):
@@ -114,7 +126,7 @@ class DielectricField:
 
         r, z = self.coords.rz_coordinates
 
-        half_L = self.L / 2
+        half_L = self.l / 2
 
         zp = z + half_L
         zm = z - half_L
@@ -127,16 +139,15 @@ class DielectricField:
 
         axial_factor = (term1 - term2) / 2
 
-        Er = self.V_0 * self.laplace_scaling_factor * axial_factor / r
-        Ez = self.V_0 * self.laplace_scaling_factor * (1 / rm - 1 / rp)
+        Er = self.v_0 / self.coaxial_denominator * axial_factor / r
+        Ez = self.v_0 / self.coaxial_denominator * (1 / rm - 1 / rp)
 
         # Permittivity-jump correction derived from boundary conditions.
         # NOTE: This applies in the gas region due to ε-discontinuity at r = r_d.
         mask_eps_jump = (r >= self.r_d) & (r <= self.r_b)
-        scale_eps = self.eps_d / self.eps_g
 
-        Er_corr = np.where(mask_eps_jump, Er * scale_eps, Er)
-        Ez_corr = np.where(mask_eps_jump, Ez * scale_eps, Ez)
+        Er_corr = np.where(mask_eps_jump, Er * self.epsilon_r, Er)
+        Ez_corr = np.where(mask_eps_jump, Ez * self.epsilon_r, Ez)
 
         return self.coords.to_cartesian(Er_corr, Ez_corr)
 
@@ -159,15 +170,15 @@ class DielectricField:
 
         r_a = self.r_a
         r_b = self.r_b
-        L = self.L
+        l = self.l
 
-        numerator = (
-            (r_b**2 + L**2) ** (3 / 2) - (r_a**2 + L**2) ** (3 / 2) - (r_b**3 - r_a**3)
+        numerator: float = (
+            (r_b**2 + l**2) ** (3 / 2) - (r_a**2 + l**2) ** (3 / 2) - (r_b**3 - r_a**3)
         )
 
         denominator = r_b**2 - r_a**2
 
-        mean_error = 1 - (2 / (3 * L)) * (numerator / denominator)
+        mean_error = 1 - (2 / (3 * l)) * (numerator / denominator)
 
         return mean_error
 
