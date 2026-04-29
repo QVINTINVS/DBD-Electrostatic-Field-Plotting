@@ -26,7 +26,7 @@ class PlotBuilder:
     LINE_WIDTH = 1
     """Line width used for rendering coordinate axes."""
 
-    def __init__(self, glyph_size=1e-3):
+    def __init__(self, field: DielectricField, glyph_size=1e-3):
         """
         Initialize the plot builder.
 
@@ -38,7 +38,7 @@ class PlotBuilder:
         """
 
         self.glyph_size = glyph_size
-        self.field = DielectricField()
+        self.field = field
         self.plotter = pv.Plotter()
 
     @cached_property
