@@ -18,7 +18,7 @@ def default_field():
     This is used when no configuration file is provided via CLI.
     """
     return DielectricField(
-        epsilon_r=5, r_a=13.5e-3, r_d=14.8e-3, r_b=18e-3, l=15e-2, v_0=10e3
+        epsilon_r=5, r_a=13.5e-3, r_d=14.8e-3, r_b=18e-3, length=15e-2, v_0=10e3
     )
 
 

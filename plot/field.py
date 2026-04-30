@@ -56,7 +56,7 @@ class DielectricField:
     r_b : float
         Inner radius of the outer conductor [m].
 
-    l : float
+    length : float
         Length of the coaxial cylinder [m].
 
     v_0 : float
@@ -70,7 +70,7 @@ class DielectricField:
     r_d: float
     r_b: float
 
-    l: float
+    length: float
 
     v_0: float
 
@@ -78,7 +78,7 @@ class DielectricField:
         if not (0 < self.r_a < self.r_d < self.r_b):
             raise ValueError("Radii must satisfy r_a < r_d < r_b and be positive.")
 
-        if self.l <= 0:
+        if self.length <= 0:
             raise ValueError("Cylinder length must be positive.")
 
         if self.epsilon_r <= 0:
@@ -86,7 +86,7 @@ class DielectricField:
 
     @cached_property
     def coords(self):
-        return cylinder.CoaxialCylinder(self.r_a, self.r_b, self.l)
+        return cylinder.CoaxialCylinder(self.r_a, self.r_b, self.length)
 
     @cached_property
     def coaxial_denominator(self):
@@ -126,7 +126,7 @@ class DielectricField:
 
         r, z = self.coords.rz_coordinates
 
-        half_L = self.l / 2
+        half_L = self.length / 2
 
         zp = z + half_L
         zm = z - half_L
@@ -170,15 +170,17 @@ class DielectricField:
 
         r_a = self.r_a
         r_b = self.r_b
-        l = self.l
+        length = self.length
 
         numerator: float = (
-            (r_b**2 + l**2) ** (3 / 2) - (r_a**2 + l**2) ** (3 / 2) - (r_b**3 - r_a**3)
+            (r_b**2 + length**2) ** (3 / 2)
+            - (r_a**2 + length**2) ** (3 / 2)
+            - (r_b**3 - r_a**3)
         )
 
         denominator = r_b**2 - r_a**2
 
-        mean_error = 1 - (2 / (3 * l)) * (numerator / denominator)
+        mean_error = 1 - (2 / (3 * length)) * (numerator / denominator)
 
         return mean_error
 

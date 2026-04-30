@@ -50,7 +50,7 @@ class CoaxialCylinder:
         Inner radius of the cylinder.
     r_o : float
         Outer radius of the cylinder.
-    L : float
+    length : float
         Total length of the cylinder along the z-axis.
     Δ : float, optional
         Spatial discretization step (default is 1e-2).
@@ -58,7 +58,7 @@ class CoaxialCylinder:
 
     r_i: float
     r_o: float
-    L: float
+    length: float
     Δ: float = 1e-2  # Spatial resolution
 
     EPS = 1e-15
@@ -84,13 +84,13 @@ class CoaxialCylinder:
 
         # Estimated number of samples
         N_r = max(math.ceil((self.r_o - self.r_i) / self.Δ), 10)
-        N_z = max(math.ceil(self.L / self.Δ), 5)
+        N_z = max(math.ceil(self.length / self.Δ), 5)
         N_theta = max(math.ceil(2 * np.pi * self.r_o / self.Δ), 20)
 
         r = np.linspace(self.r_i, self.r_o, N_r)
         theta = np.linspace(0, 2 * np.pi, N_theta, endpoint=False)
 
-        half_L = self.L / 2
+        half_L = self.length / 2
         z = np.linspace(-half_L, half_L, N_z)
 
         return r, theta, z
